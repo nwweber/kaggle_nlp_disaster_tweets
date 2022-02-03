@@ -4,7 +4,6 @@ https://www.kaggle.com/philculliton/nlp-getting-started-tutorial
 
 changed in some parts, e.g file names
 """
-import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn import feature_extraction, linear_model, model_selection, preprocessing
 
