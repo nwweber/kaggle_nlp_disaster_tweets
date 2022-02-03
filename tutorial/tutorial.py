@@ -30,4 +30,4 @@ scores = model_selection.cross_val_score(
 clf.fit(train_vectors, train_df["target"])
 sample_submission = pd.read_csv("kaggle_data/sample_submission.csv")
 sample_submission["target"] = clf.predict(test_vectors)
-sample_submission.to_csv("submission.csv", index=False)
+sample_submission.to_csv("tutorial/submission.csv", index=False)
