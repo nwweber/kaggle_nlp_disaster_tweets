@@ -4,16 +4,24 @@ https://www.kaggle.com/philculliton/nlp-getting-started-tutorial
 
 changed in some parts, e.g file names
 """
-from mlflow import log_metric, log_param, log_artifacts, set_experiment
-from pathlib import Path
 from os.path import join as pjoin
+from pathlib import Path
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-from sklearn import feature_extraction, linear_model, model_selection, preprocessing
+from sklearn import feature_extraction, linear_model, model_selection
 
-set_experiment('nlp_disaster_tweets')
+project_root: Path = Path("./")
+try:
+    # project root is one level up from where this file lives
+    project_root: Path = Path(__file__).parent
+except NameError:
+    # thrown if __file__ is not defined
+    # seems like you're running this interactively. better make sure you
+    # figure out paths by yourself
+    # recommendation: start python process in root dir of this repository
+    pass
 
-train_df = pd.read_csv("kaggle_data/train.csv")
-test_df = pd.read_csv("kaggle_data/test.csv")
+train_df = pd.read_csv(project_root / "kaggle_data/train.csv")
+test_df = pd.read_csv(project_root / "kaggle_data/test.csv")
 
 count_vectorizer = feature_extraction.text.CountVectorizer()
 train_vectors = count_vectorizer.fit_transform(train_df["text"])
@@ -30,17 +38,6 @@ scores = model_selection.cross_val_score(
     clf, train_vectors, train_df["target"], cv=5, scoring="f1"
 )
 clf.fit(train_vectors, train_df["target"])
-
-for p, v in clf.get_params().items():
-    log_param(p, v)
-log_metric('f1', scores.mean())
-from mlflow.sklearn import log_model
-log_model(clf, 'ridge_classififer')
-
-# clf_cv = linear_model.RidgeClassifierCV(cv=5, scoring='f1', alphas=(0.1, 1.0, 10, 100, 1000))
-# clf_cv.fit(train_vectors, train_df['target'])
-# print(clf_cv.best_score_)
-# print(clf_cv.alpha_)
 
 sample_submission = pd.read_csv("kaggle_data/sample_submission.csv")
 sample_submission["target"] = clf.predict(test_vectors)
