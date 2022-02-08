@@ -4,6 +4,8 @@ https://www.kaggle.com/philculliton/nlp-getting-started-tutorial
 
 changed in some parts, e.g file names
 """
+from pathlib import Path
+from os.path import join as pjoin
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn import feature_extraction, linear_model, model_selection, preprocessing
 
@@ -11,8 +13,6 @@ train_df = pd.read_csv("kaggle_data/train.csv")
 test_df = pd.read_csv("kaggle_data/test.csv")
 
 count_vectorizer = feature_extraction.text.CountVectorizer()
-# let's get counts for the first 5 tweets in the data
-example_train_vectors = count_vectorizer.fit_transform(train_df["text"][0:5])
 train_vectors = count_vectorizer.fit_transform(train_df["text"])
 
 # note that we're NOT using .fit_transform() here. Using just .transform() makes sure
@@ -28,6 +28,9 @@ scores = model_selection.cross_val_score(
     clf, train_vectors, train_df["target"], cv=3, scoring="f1"
 )
 clf.fit(train_vectors, train_df["target"])
+
 sample_submission = pd.read_csv("kaggle_data/sample_submission.csv")
 sample_submission["target"] = clf.predict(test_vectors)
-sample_submission.to_csv("tutorial/submission.csv", index=False)
+out_dir: str = 'output'
+Path(out_dir).mkdir(parents=True, exist_ok=True)
+sample_submission.to_csv(pjoin(out_dir, 'submission.csv'), index=False)
