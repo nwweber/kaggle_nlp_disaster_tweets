@@ -7,6 +7,7 @@ import pandas as pd
 from mlflow import log_metric, log_param, set_experiment
 from mlflow.sklearn import log_model
 from sklearn import feature_extraction, linear_model
+from sklearn.model_selection import cross_val_score
 
 
 def main() -> None:
@@ -21,7 +22,8 @@ def main() -> None:
     project_root: Path = Path("./")
     try:
         # project root is one level up from where this file lives
-        project_root: Path = Path(__file__).parent
+        # first .parent removes filename + extension, second one goes up one dir
+        project_root: Path = Path(__file__).parent.parent
     except NameError:
         # thrown if __file__ is not defined
         # seems like you're running this interactively. better make sure you
@@ -30,16 +32,14 @@ def main() -> None:
         pass
 
     train_df = pd.read_csv(project_root / "kaggle_data/train.csv")
-    test_df = pd.read_csv(project_root / "kaggle_data/test.csv")
-
     count_vectorizer = feature_extraction.text.CountVectorizer()
     train_vectors = count_vectorizer.fit_transform(train_df["text"])
-    test_vectors = count_vectorizer.transform(test_df["text"])
 
     clf_cv = linear_model.RidgeClassifierCV(
         cv=5, scoring="f1", alphas=(0.1, 1.0, 10, 100, 1000)
     )
     clf_cv.fit(train_vectors, train_df["target"])
+
     for p, v in clf_cv.get_params().items():
         log_param(p, v)
     log_param("best_alpha", clf_cv.alpha_)
@@ -48,11 +48,10 @@ def main() -> None:
     print(clf_cv.best_score_)
     print(clf_cv.alpha_)
 
-    sample_submission = pd.read_csv("kaggle_data/sample_submission.csv")
-    sample_submission["target"] = clf_cv.predict(test_vectors)
-    out_dir: str = "output"
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
-    sample_submission.to_csv(pjoin(out_dir, "submission.csv"), index=False)
+    # # somewhat model-agnostic scoring
+    # scores = cross_val_score(
+    #     clf_cv, train_vectors, train_df["target"], cv=5, scoring="f1"
+    # )
 
 
 if __name__ == "__main__":
