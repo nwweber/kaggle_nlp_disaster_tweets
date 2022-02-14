@@ -3,16 +3,21 @@ train ridge cv model
 """
 from os.path import join as pjoin
 from pathlib import Path
-import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+import pandas as pd
 from mlflow import log_metric, log_param, set_experiment
 from mlflow.sklearn import log_model
 from sklearn import feature_extraction, linear_model
 
-if __name__ == "__main__":
+
+def main() -> None:
+    """
+    train and log model
+    :return:
+    :rtype:
+    """
     # check this experiment out in mlflow ui by running this in a shell:
     # mlflow ui
     set_experiment("nlp_disaster_tweets")
-
     project_root: Path = Path("./")
     try:
         # project root is one level up from where this file lives
@@ -44,7 +49,11 @@ if __name__ == "__main__":
     print(clf_cv.alpha_)
 
     sample_submission = pd.read_csv("kaggle_data/sample_submission.csv")
-    sample_submission["target"] = clf.predict(test_vectors)
+    sample_submission["target"] = clf_cv.predict(test_vectors)
     out_dir: str = "output"
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     sample_submission.to_csv(pjoin(out_dir, "submission.csv"), index=False)
+
+
+if __name__ == "__main__":
+    main()
