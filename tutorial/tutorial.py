@@ -12,7 +12,8 @@ from sklearn import feature_extraction, linear_model, model_selection
 project_root: Path = Path("./")
 try:
     # project root is one level up from where this file lives
-    project_root: Path = Path(__file__).parent
+    # project_root: Path = Path(__file__).parent
+    pass
 except NameError:
     # thrown if __file__ is not defined
     # seems like you're running this interactively. better make sure you
@@ -44,3 +45,5 @@ sample_submission["target"] = clf.predict(test_vectors)
 out_dir: str = "output"
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 sample_submission.to_csv(pjoin(out_dir, "submission.csv"), index=False)
+
+print('done!')
