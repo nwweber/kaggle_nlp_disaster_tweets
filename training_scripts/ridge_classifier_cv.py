@@ -1,13 +1,11 @@
 """
 train ridge cv model
 """
-from os.path import join as pjoin
 from pathlib import Path
 import pandas as pd
-from mlflow import log_metric, log_param, set_experiment
+from mlflow import log_metric, log_param, set_experiment, set_tracking_uri
 from mlflow.sklearn import log_model
 from sklearn import feature_extraction, linear_model
-from sklearn.model_selection import cross_val_score
 
 
 def main() -> None:
@@ -16,9 +14,6 @@ def main() -> None:
     :return:
     :rtype:
     """
-    # check this experiment out in mlflow ui by running this in a shell:
-    # mlflow ui
-    set_experiment("nlp_disaster_tweets")
     project_root: Path = Path("./")
     try:
         # project root is one level up from where this file lives
@@ -31,6 +26,12 @@ def main() -> None:
         # recommendation: start python process in root dir of this repository
         pass
 
+    # track in 'mlruns' folder under project root directory
+    set_tracking_uri(f"file://{project_root/'mlruns'}")
+    # check this experiment out in mlflow ui by running this in a shell:
+    # mlflow ui
+    set_experiment("nlp_disaster_tweets")
+
     train_df = pd.read_csv(project_root / "kaggle_data/train.csv")
     count_vectorizer = feature_extraction.text.CountVectorizer()
     train_vectors = count_vectorizer.fit_transform(train_df["text"])
@@ -40,18 +41,12 @@ def main() -> None:
     )
     clf_cv.fit(train_vectors, train_df["target"])
 
+    # log fixed and learned hyperparameters to mlflow
     for p, v in clf_cv.get_params().items():
         log_param(p, v)
     log_param("best_alpha", clf_cv.alpha_)
+    # log f1 score for best value of alpha (see above) to mlflow
     log_metric("f1", clf_cv.best_score_)
-    log_model(clf_cv, "ridge_classififer_cv")
-    print(clf_cv.best_score_)
-    print(clf_cv.alpha_)
-
-    # # somewhat model-agnostic scoring
-    # scores = cross_val_score(
-    #     clf_cv, train_vectors, train_df["target"], cv=5, scoring="f1"
-    # )
 
 
 if __name__ == "__main__":
