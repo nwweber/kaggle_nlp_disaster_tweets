@@ -9,6 +9,8 @@ from mlflow.sklearn import log_model
 from sklearn import feature_extraction, linear_model
 from sklearn.feature_extraction.text import TfidfTransformer
 
+from mlflow import log_metrics, log_params
+
 
 train_df = pd.read_csv(project_root / "kaggle_data/train.csv")
 test_df = pd.read_csv(project_root / "kaggle_data/test.csv")
@@ -18,7 +20,6 @@ count_vectorizer = feature_extraction.text.CountVectorizer()
 train_vectors = count_vectorizer.fit_transform(train_df["text"])
 # transform only on the test set
 test_vectors = count_vectorizer.transform(test_df["text"])
-
 
 tf_transformer = TfidfTransformer(use_idf=False).fit(train_vectors)
 X_train_tf = tf_transformer.transform(train_vectors)
@@ -31,3 +32,4 @@ logi.fit(X_train_tfidf, train_df["target"])
 
 scores_logi = logi.score(X_train_tfidf, train_df["target"])
 scores_logi
+

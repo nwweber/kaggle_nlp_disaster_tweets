@@ -47,3 +47,6 @@ Path(out_dir).mkdir(parents=True, exist_ok=True)
 sample_submission.to_csv(pjoin(out_dir, "submission.csv"), index=False)
 
 print('done!')
+
+# locals()
+# MLflow
